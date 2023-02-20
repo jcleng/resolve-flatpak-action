@@ -39,7 +39,6 @@ jobs:
         name: Artifact file
         path: |
           *.flatpak
-          blackmagic/*.flatpak
     - name: Release set path
       run: |
         touch release.txt
@@ -53,4 +52,3 @@ jobs:
         body_path: release.txt
         files: |
           ${{ env.RELEASE_PATH }}/*.flatpak
-          ${{ env.RELEASE_PATH }}/blackmagic/*.flatpak
