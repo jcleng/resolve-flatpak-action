@@ -51,18 +51,18 @@ jobs:
         manifest-path: blackmagic/com.blackmagic.Resolve.yaml
         # cache-key: flatpak-builder1811
 
-    - name: Cloudupload
-      id: cloudupload
-      run: |
-        curl -fsSL git.io/file-transfer | sh
-        # wet < 2GB
-        # gg
-        # gof
-        ./transfer gg --no-progress com.blackmagic.Resolve.flatpak 2>&1 | tee cloudupload.log
-        echo "url=$(cat cloudupload.log | grep https | cut -f3 -d' ')" >> $GITHUB_OUTPUT
-    - name: upload cloudupload url
-      run: |
-        echo ${{ steps.cloudupload.outputs.url }}
+    # - name: Cloudupload
+    #   id: cloudupload
+    #   run: |
+    #     curl -fsSL git.io/file-transfer | sh
+    #     # wet < 2GB
+    #     # gg
+    #     # gof
+    #     ./transfer gg --no-progress com.blackmagic.Resolve.flatpak 2>&1 | tee cloudupload.log
+    #     echo "url=$(cat cloudupload.log | grep https | cut -f3 -d' ')" >> $GITHUB_OUTPUT
+    # - name: upload cloudupload url
+    #   run: |
+    #     echo ${{ steps.cloudupload.outputs.url }}
 
     - name: Release set path
       run: |
