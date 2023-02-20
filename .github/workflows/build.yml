@@ -18,19 +18,6 @@ jobs:
     - name: Clone Source
       run: |
         git clone --depth=1 https://github.com/pobthebuilder/resolve-flatpak.git blackmagic --recursive
-    - name: Cloudupload
-      id: cloudupload
-      run: |
-        curl -fsSL git.io/file-transfer | sh
-        # wet < 2GB
-        # gg
-        # gof
-        ./transfer gg --no-progress blackmagic/com.blackmagic.Resolve.yaml 2>&1 | tee cloudupload.log
-        echo "url=$(cat cloudupload.log | grep https | cut -f3 -d' ')" >> $GITHUB_OUTPUT
-    - name: upload cloudupload url
-      run: |
-        echo ${{ steps.cloudupload.outputs.url }}
-        test_xx
     - name: Download File
       run: |
         cd blackmagic
@@ -38,7 +25,7 @@ jobs:
         sed -i 's/18\.1\.2_Linux.run/18\.1\.1_Linux.run/' com.blackmagic.Resolve.yaml
         # https://www.videohelp.com/software/DaVinci-Resolve/old-versions
         dnf install -y wget
-        wget https://www.videohelp.com/download-HTCKMfntnGvL/DaVinci_Resolve_18.1.1_Linux.zip -O DaVinci_Resolve_18.1.2_Linux.zip
+        wget https://www.videohelp.com/download/DaVinci_Resolve_18.1.1_Linux.zip -O DaVinci_Resolve_18.1.2_Linux.zip
         ls -lah DaVinci_Resolve_18.1.2_Linux.zip
     - name: flatpak action
       uses: flatpak/flatpak-github-actions/flatpak-builder@v4
@@ -52,11 +39,26 @@ jobs:
         name: Artifact file
         path: |
           *.flatpak
+
+    - name: Cloudupload
+      id: cloudupload
+      run: |
+        curl -fsSL git.io/file-transfer | sh
+        # wet < 2GB
+        # gg
+        # gof
+        ./transfer gg --no-progress com.blackmagic.Resolve.flatpak 2>&1 | tee cloudupload.log
+        echo "url=$(cat cloudupload.log | grep https | cut -f3 -d' ')" >> $GITHUB_OUTPUT
+    - name: upload cloudupload url
+      run: |
+        echo ${{ steps.cloudupload.outputs.url }}
+
     - name: Release set path
       run: |
         touch release.txt
         echo "🔗 [cloudupload](${{ steps.cloudupload.outputs.url }})" >> release.txt
         echo "RELEASE_PATH=$PWD" >> $GITHUB_ENV
+
     - name: Release
       uses: softprops/action-gh-release@v1
       env:
@@ -65,4 +67,4 @@ jobs:
         tag_name: flatpakfile
         body_path: release.txt
         files: |
-          ${{ env.RELEASE_PATH }}/*.flatpak
+          ${{ env.RELEASE_PATH }}/release.txt
