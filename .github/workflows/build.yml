@@ -25,10 +25,9 @@ jobs:
         # ./transfer wet -s -p 64 --no-progress ${FIRMWARE} 2>&1 | tee wettransfer.log
         ./transfer wet -s -p 64 --no-progress blackmagic/com.blackmagic.Resolve.yaml 2>&1 | tee wettransfer.log
         echo "url=$(cat wettransfer.log | grep https | cut -f3 -d' ')" >> $GITHUB_OUTPUT
-    - name: TEST
+    - name: upload wettransfer url
       run: |
         echo ${{ steps.wettransfer.outputs.url }}
-        for_test
     - name: Download File
       run: |
         cd blackmagic
