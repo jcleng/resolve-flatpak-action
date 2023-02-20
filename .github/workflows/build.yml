@@ -1,0 +1,56 @@
+on:
+  repository_dispatch:
+  workflow_dispatch:
+    inputs:
+      ssh:
+        description: '立即构建'
+        required: true
+        default: 'true'
+name: CI
+jobs:
+  flatpak:
+    name: "Flatpak"
+    runs-on: ubuntu-latest
+    container:
+      # image: bilelmoussaoui/flatpak-github-actions:freedesktop-22.08
+      image: bilelmoussaoui/flatpak-github-actions:kde-5.15-22.08
+      options: --privileged
+    steps:
+    - name: Clone Source
+        run: |
+          # git clone --depth=1 https://github.com/pobthebuilder/resolve-flatpak.git blackmagic
+          git clone --depth=1 https://github.com/flathub/io.mgba.mGBA.git blackmagic
+    steps:
+    - name: Download File
+        run: |
+          cd blackmagic
+          # sed -i '/sha256/d' com.blackmagic.Resolve.yaml
+          # wget https://www.videohelp.com/download/DaVinci_Resolve_18.1.1_Linux.zip -O DaVinci_Resolve_18.1.2_Linux.zip
+    - uses: actions/checkout@v2
+    - uses: flatpak/flatpak-github-actions/flatpak-builder@v4
+      with:
+        # bundle: io.mgba.mGBA.flatpak
+        bundle: com.blackmagic.Resolve.flatpak
+        # manifest-path: blackmagic/com.blackmagic.Resolve.yaml
+        manifest-path: blackmagic/io.mgba.mGBA.json
+    - name: Artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: Artifact file
+        path: |
+          *.flatpak
+          blackmagic/*.flatpak
+    - name: Release set path
+      run: |
+        touch release.txt
+        echo "RELEASE_PATH=$PWD" >> $GITHUB_ENV
+    - name: Release
+      uses: softprops/action-gh-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: flatpakfile
+        body_path: release.txt
+        files: |
+          ${{ env.RELEASE_PATH }}/*.flatpak
+          ${{ env.RELEASE_PATH }}/blackmagic/*.flatpak
