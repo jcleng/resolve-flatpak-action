@@ -25,8 +25,8 @@ jobs:
           cd blackmagic
           # sed -i '/sha256/d' com.blackmagic.Resolve.yaml
           # wget https://www.videohelp.com/download/DaVinci_Resolve_18.1.1_Linux.zip -O DaVinci_Resolve_18.1.2_Linux.zip
-    - uses: actions/checkout@v2
-    - uses: flatpak/flatpak-github-actions/flatpak-builder@v4
+    - name: flatpak action
+      uses: flatpak/flatpak-github-actions/flatpak-builder@v4
       with:
         # bundle: io.mgba.mGBA.flatpak
         bundle: com.blackmagic.Resolve.flatpak
