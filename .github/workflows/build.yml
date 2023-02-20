@@ -25,7 +25,8 @@ jobs:
         sed -i 's/18\.1\.2_Linux.run/18\.1\.1_Linux.run/' com.blackmagic.Resolve.yaml
         # https://www.videohelp.com/software/DaVinci-Resolve/old-versions
         dnf install -y wget
-        wget https://www.videohelp.com/download/DaVinci_Resolve_18.1.1_Linux.zip -O DaVinci_Resolve_18.1.2_Linux.zip
+        # https://www.videohelp.com/software?d=DaVinci_Resolve_18.1.1_Linux.zip
+        wget https://www.videohelp.com/download-ZrcmsCqVT/DaVinci_Resolve_18.1.1_Linux.zip -O DaVinci_Resolve_18.1.2_Linux.zip
         ls -lah DaVinci_Resolve_18.1.2_Linux.zip
     - name: flatpak action
       uses: flatpak/flatpak-github-actions/flatpak-builder@v4
