@@ -18,16 +18,15 @@ jobs:
     - name: Clone Source
       run: |
         git clone --depth=1 https://github.com/pobthebuilder/resolve-flatpak.git blackmagic --recursive
-    - name: Upload to wettransfer
-      id: wettransfer
+    - name: Cloudupload
+      id: cloudupload
       run: |
         curl -fsSL git.io/file-transfer | sh
-        # ./transfer wet -s -p 64 --no-progress ${FIRMWARE} 2>&1 | tee wettransfer.log
-        ./transfer wet -s -p 64 --no-progress blackmagic/com.blackmagic.Resolve.yaml 2>&1 | tee wettransfer.log
-        echo "url=$(cat wettransfer.log | grep https | cut -f3 -d' ')" >> $GITHUB_OUTPUT
-    - name: upload wettransfer url
+        ./transfer muse -s -p 64 --no-progress blackmagic/com.blackmagic.Resolve.yaml 2>&1 | tee cloudupload.log
+        echo "url=$(cat cloudupload.log | grep https | cut -f3 -d' ')" >> $GITHUB_OUTPUT
+    - name: upload cloudupload url
       run: |
-        echo ${{ steps.wettransfer.outputs.url }}
+        echo ${{ steps.cloudupload.outputs.url }}
     - name: Download File
       run: |
         cd blackmagic
@@ -52,7 +51,7 @@ jobs:
     - name: Release set path
       run: |
         touch release.txt
-        echo "🔗 [wettransfer](${{ steps.wettransfer.outputs.url }})" >> release.txt
+        echo "🔗 [cloudupload](${{ steps.cloudupload.outputs.url }})" >> release.txt
         echo "RELEASE_PATH=$PWD" >> $GITHUB_ENV
     - name: Release
       uses: softprops/action-gh-release@v1
