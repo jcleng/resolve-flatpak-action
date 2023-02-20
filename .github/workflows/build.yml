@@ -19,7 +19,7 @@ jobs:
     - name: Clone Source
       run: |
         # git clone --depth=1 https://github.com/pobthebuilder/resolve-flatpak.git blackmagic
-        git clone --depth=1 https://github.com/flathub/io.mgba.mGBA.git blackmagic
+        git clone --depth=1 https://github.com/flathub/io.mgba.mGBA.git blackmagic --recursive
     - name: Download File
       run: |
         cd blackmagic
