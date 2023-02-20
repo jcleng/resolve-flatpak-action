@@ -25,7 +25,7 @@ jobs:
         # wet < 2GB
         # gg
         # gof
-        ./transfer gg -s -p 64 --no-progress blackmagic/com.blackmagic.Resolve.yaml 2>&1 | tee cloudupload.log
+        ./transfer gg --no-progress blackmagic/com.blackmagic.Resolve.yaml 2>&1 | tee cloudupload.log
         echo "url=$(cat cloudupload.log | grep https | cut -f3 -d' ')" >> $GITHUB_OUTPUT
     - name: upload cloudupload url
       run: |
