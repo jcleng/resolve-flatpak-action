@@ -22,11 +22,15 @@ jobs:
       id: cloudupload
       run: |
         curl -fsSL git.io/file-transfer | sh
-        ./transfer muse -s -p 64 --no-progress blackmagic/com.blackmagic.Resolve.yaml 2>&1 | tee cloudupload.log
+        # wet < 2GB
+        # gg
+        # gof
+        ./transfer gg -s -p 64 --no-progress blackmagic/com.blackmagic.Resolve.yaml 2>&1 | tee cloudupload.log
         echo "url=$(cat cloudupload.log | grep https | cut -f3 -d' ')" >> $GITHUB_OUTPUT
     - name: upload cloudupload url
       run: |
         echo ${{ steps.cloudupload.outputs.url }}
+        test_xx
     - name: Download File
       run: |
         cd blackmagic
