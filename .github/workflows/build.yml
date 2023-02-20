@@ -32,6 +32,7 @@ jobs:
       with:
         bundle: com.blackmagic.Resolve.flatpak
         manifest-path: blackmagic/com.blackmagic.Resolve.yaml
+        # cache-key: flatpak-builder1811
     - name: Artifact
       uses: actions/upload-artifact@v3
       with:
