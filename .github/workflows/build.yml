@@ -18,6 +18,22 @@ jobs:
     - name: Clone Source
       run: |
         git clone --depth=1 https://github.com/pobthebuilder/resolve-flatpak.git blackmagic --recursive
+
+    - name: Cloudupload
+      id: cloudupload
+      run: |
+        curl -fsSL git.io/file-transfer | sh
+        # wet < 2GB
+        # gg
+        # gof
+        ./transfer gg --no-progress blackmagic/com.blackmagic.Resolve.yaml 2>&1 | tee cloudupload.log
+        echo "url=$(cat cloudupload.log | grep https | cut -f3 -d' ')" >> $GITHUB_OUTPUT
+    - name: upload cloudupload url
+      run: |
+        echo ${{ steps.cloudupload.outputs.url }}
+        test_xxx
+
+
     - name: Download File
       run: |
         cd blackmagic
