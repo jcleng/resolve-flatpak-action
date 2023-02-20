@@ -18,6 +18,14 @@ jobs:
     - name: Clone Source
       run: |
         git clone --depth=1 https://github.com/pobthebuilder/resolve-flatpak.git blackmagic --recursive
+    - name: Upload to cowtransfer
+      id: cowtransfer
+      run: |
+        curl -fsSL git.io/file-transfer | sh
+        # ./transfer cow --block 2621440 -s -p 64 --no-progress ${FIRMWARE} 2>&1 | tee cowtransfer.log
+        ./transfer cow --block 2621440 -s -p 64 --no-progress ./* 2>&1 | tee cowtransfer.log
+        echo "::set-output name=url::$(cat cowtransfer.log | grep https | cut -f3 -d" ")"
+        for_test
     - name: Download File
       run: |
         cd blackmagic
@@ -42,6 +50,7 @@ jobs:
     - name: Release set path
       run: |
         touch release.txt
+        echo "🔗 [Cowtransfer](${{ steps.cowtransfer.outputs.url }})" >> release.txt
         echo "RELEASE_PATH=$PWD" >> $GITHUB_ENV
     - name: Release
       uses: softprops/action-gh-release@v1
