@@ -30,22 +30,40 @@ echo "==> 从 .run 中提取 squashfs (offset) ..."
 # .run 文件是 ELF 运行时 + 内嵌 squashfs。
 # 搜索 'hsqs' 魔数，并验证其后的 block size 字段是否在合法范围 (4K~1M)，
 # 以排除普通字符串误匹配（参考 night199uk/resolve-flatpak 的做法）。
-RUNFILE_SIZE=$(stat -c %s "${RUNFILE}")
-OFFSET=""
-POS=0
-while [ "${POS}" -lt "${RUNFILE_SIZE}" ]; do
-    HIT=$(LC_ALL=C dd if="${RUNFILE}" bs=1 skip="${POS}" count=$((RUNFILE_SIZE - POS)) 2>/dev/null | grep -aob -m1 'hsqs' | sed 's/:.*//')
-    [ -z "${HIT}" ] && break
-    CAND=$((POS + HIT))
-    # block size 位于 offset+12 处的 4 字节小端
-    BS=$(LC_ALL=C dd if="${RUNFILE}" bs=1 skip=$((CAND + 12)) count=4 2>/dev/null | od -An -tu4 -t x1 | tr -d ' \n' | head -c 8)
-    BS_VAL=$((16#${BS:-0}))
-    if [ "${BS_VAL}" -ge 4096 ] && [ "${BS_VAL}" -le 1048576 ]; then
-        OFFSET="${CAND}"
-        break
-    fi
-    POS=$((CAND + 4))
-done
+# 用 Python 一次性流式读取，避免反复 dd 整个文件导致极慢。
+OFFSET=$(python3 - "$RUNFILE" <<'PY'
+import sys
+path = sys.argv[1]
+magic = b"hsqs"
+found = []
+with open(path, "rb") as f:
+    carry = b""
+    pos = 0
+    while True:
+        chunk = f.read(4 * 1024 * 1024)
+        if not chunk:
+            break
+        hay = carry + chunk
+        idx = 0
+        while True:
+            idx = hay.find(magic, idx)
+            if idx == -1:
+                break
+            found.append(pos + idx)
+            idx += 1
+        carry = hay[-(len(magic) - 1):]
+        pos += len(chunk)
+with open(path, "rb") as f:
+    for off in found:
+        f.seek(off + 12)
+        bs = f.read(4)
+        if len(bs) == 4:
+            v = int.from_bytes(bs, "little")
+            if 4096 <= v <= 1048576:
+                print(off)
+                break
+PY
+)
 
 if [ -z "${OFFSET}" ]; then
     echo "ERROR: 未找到有效的 squashfs superblock" >&2
