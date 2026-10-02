@@ -90,16 +90,17 @@ modules:
     build-commands:
       - install -Dm644 logo.png /app/share/icons/hicolor/scalable/apps/com.jcleng.Resolve.png
       - install -Dm644 com.jcleng.Resolve.desktop /app/share/applications/com.jcleng.Resolve.desktop
+      - install -Dm755 resolve.py /app/bin/resolve.py
       - |
         cd /run/build/resolve
-        chmod +x download-resolve.sh
-        ./download-resolve.sh
-        unzip -q "DaVinci_Resolve_${RESOLVE_VERSION}_Linux.zip"
-        ls -la
+        chmod +x install-resolve.sh
+        ./install-resolve.sh
     sources:
       - type: file
         path: logo.png
       - type: file
         path: com.jcleng.Resolve.desktop
       - type: file
-        path: download-resolve.sh
+        path: resolve.py
+      - type: file
+        path: install-resolve.sh
