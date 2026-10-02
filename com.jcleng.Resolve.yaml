@@ -84,16 +84,22 @@ modules:
     build-options:
       build-args:
         - --share=network
+      env:
+        RESOLVE_VERSION: "19.0.3"
+        RESOLVE_DLID: "ee1da4f13df74d72b6da783ead2ed875"
     build-commands:
       - install -Dm644 logo.png /app/share/icons/hicolor/scalable/apps/com.jcleng.Resolve.png
       - install -Dm644 com.jcleng.Resolve.desktop /app/share/applications/com.jcleng.Resolve.desktop
       - |
         cd /run/build/resolve
-        wget -q https://www.videohelp.com/download/DaVinci_Resolve_18.0.4_Linux.zip -O DaVinci_Resolve_18.0.4_Linux.zip
-        unzip -q DaVinci_Resolve_18.0.4_Linux.zip
+        chmod +x download-resolve.sh
+        ./download-resolve.sh
+        unzip -q "DaVinci_Resolve_${RESOLVE_VERSION}_Linux.zip"
         ls -la
     sources:
       - type: file
         path: logo.png
       - type: file
         path: com.jcleng.Resolve.desktop
+      - type: file
+        path: download-resolve.sh
