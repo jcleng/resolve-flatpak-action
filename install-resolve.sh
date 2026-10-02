@@ -104,5 +104,32 @@ for pattern in libglib libgio libgmodule libgobject; do
     done
 done
 
+echo "==> 提取控制面板 API (dvpanel-framework) ..."
+# 控制面板（DaVinci Panels / Fairlight Panel）需要这两个 .so
+TGZ="/app/share/panels/dvpanel-framework-linux-x86_64.tgz"
+if [ -f "${TGZ}" ]; then
+    tar -xzf "${TGZ}" -C /app/libs libDaVinciPanelAPI.so libFairlightPanelAPI.so 2>/dev/null || \
+    tar -xzf "${TGZ}" -C /app/libs 2>/dev/null
+    echo "    已提取面板 API"
+else
+    echo "    未找到 dvpanel-framework tgz，跳过"
+fi
+
+echo "==> 创建 Blackmagic RAW API 符号链接 ..."
+if [ -f /app/libs/libBlackmagicRawAPI.so ]; then
+    mkdir -p /app/bin/BlackmagicRawAPI
+    ln -sf ../libs/libBlackmagicRawAPI.so /app/bin/libBlackmagicRawAPI.so
+    ln -sf ../../libs/libBlackmagicRawAPI.so /app/bin/BlackmagicRawAPI/libBlackmagicRawAPI.so
+    echo "    已链接 libBlackmagicRawAPI.so"
+fi
+
+echo "==> 修复可写目录权限 ..."
+# 运行时这些目录需要可写（缓存、许可证、数据库等）
+for d in easyDCP .license Fairlight Videos/CacheClip Videos/.gallery Documents/BlackmagicDesign; do
+    [ -d "/app/${d}" ] && chmod -R a+rwX "/app/${d}" 2>/dev/null || true
+done
+# 确保 bin/resolve 可执行
+[ -f /app/bin/resolve ] && chmod +x /app/bin/resolve
+
 echo "==> 安装完成"
 ls -la /app/bin/
