@@ -27,8 +27,30 @@ echo "==> 解压 zip ..."
 unzip -q "${ARCHIVE}"
 
 echo "==> 从 .run 中提取 squashfs (offset) ..."
-# .run 文件是 ELF 运行时 + 内嵌 squashfs，用 unsquashfs -offset 解包
-OFFSET=$(LC_ALL=C grep -aob -m1 'hsqs' "${RUNFILE}" | sed 's/:.*//')
+# .run 文件是 ELF 运行时 + 内嵌 squashfs。
+# 搜索 'hsqs' 魔数，并验证其后的 block size 字段是否在合法范围 (4K~1M)，
+# 以排除普通字符串误匹配（参考 night199uk/resolve-flatpak 的做法）。
+RUNFILE_SIZE=$(stat -c %s "${RUNFILE}")
+OFFSET=""
+POS=0
+while [ "${POS}" -lt "${RUNFILE_SIZE}" ]; do
+    HIT=$(LC_ALL=C dd if="${RUNFILE}" bs=1 skip="${POS}" count=$((RUNFILE_SIZE - POS)) 2>/dev/null | grep -aob -m1 'hsqs' | sed 's/:.*//')
+    [ -z "${HIT}" ] && break
+    CAND=$((POS + HIT))
+    # block size 位于 offset+12 处的 4 字节小端
+    BS=$(LC_ALL=C dd if="${RUNFILE}" bs=1 skip=$((CAND + 12)) count=4 2>/dev/null | od -An -tu4 -t x1 | tr -d ' \n' | head -c 8)
+    BS_VAL=$((16#${BS:-0}))
+    if [ "${BS_VAL}" -ge 4096 ] && [ "${BS_VAL}" -le 1048576 ]; then
+        OFFSET="${CAND}"
+        break
+    fi
+    POS=$((CAND + 4))
+done
+
+if [ -z "${OFFSET}" ]; then
+    echo "ERROR: 未找到有效的 squashfs superblock" >&2
+    exit 1
+fi
 echo "    squashfs offset = ${OFFSET}"
 unsquashfs -quiet -no-progress -no-xattrs -d squashfs-root -offset "${OFFSET}" "${RUNFILE}"
 
