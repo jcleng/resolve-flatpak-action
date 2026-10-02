@@ -54,14 +54,10 @@ jobs:
         - 运行时: org.kde.Platform / io.qt.PySide.BaseApp 6.11
         EOF
 
-    - name: Release
-      uses: softprops/action-gh-release@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    - name: Upload artifact
+      uses: actions/upload-artifact@v4
       with:
-        tag_name: ${{ env.TAG }}
-        name: DaVinci Resolve ${{ env.RESOLVE_VERSION }} (${{ env.TAG }})
-        body_path: ${{ env.RELEASE_PATH }}/release.txt
-        files: |
-          ${{ env.RELEASE_PATH }}/com.jcleng.Resolve.flatpak
-        overwrite: true
+        name: com.jcleng.Resolve-${{ env.TAG }}
+        path: ${{ env.RELEASE_PATH }}/com.jcleng.Resolve.flatpak
+        compression-level: 0
+        if-no-files-found: error
