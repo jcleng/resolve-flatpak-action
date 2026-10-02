@@ -90,5 +90,19 @@ cp -a squashfs-root/easyDCP /app/ 2>/dev/null || true
 cp -a squashfs-root/Fairlight /app/ 2>/dev/null || true
 mkdir -p /app/.license /app/Videos/CacheClip /app/Videos/.gallery /app/Documents/BlackmagicDesign
 
+echo "==> 禁用 Resolve 自带的 GLib 系列库（避免与运行时系统 GLib 冲突）..."
+# DaVinci Resolve 自带的 libglib/libgio/libgmodule/libgobject 版本过旧，
+# 会与系统的 libpango 等库产生符号冲突（g_once_init_leave_pointer 等）。
+# 将其移入 libs/disabled/，强制使用运行时提供的系统 GLib。
+DISABLED="/app/libs/disabled"
+mkdir -p "${DISABLED}"
+for pattern in libglib libgio libgmodule libgobject; do
+    for lib in /app/libs/${pattern}*; do
+        [ -e "${lib}" ] || continue
+        echo "    禁用: $(basename "${lib}")"
+        mv "${lib}" "${DISABLED}/"
+    done
+done
+
 echo "==> 安装完成"
 ls -la /app/bin/
