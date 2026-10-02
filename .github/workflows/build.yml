@@ -37,7 +37,6 @@ jobs:
     - name: Download File
       run: |
         cd blackmagic
-        sed -i '/sha256/d' com.blackmagic.Resolve.yaml
         sed -i 's/18\.1\.2_Linux.run/18\.1\.1_Linux.run/' com.blackmagic.Resolve.yaml
         dnf install -y wget
         wget https://downloads.blackmagicdesign.com/DaVinci_Resolve/18.1.1/DaVinci_Resolve_18.1.1_Linux.zip -O DaVinci_Resolve_18.1.2_Linux.zip
