@@ -102,7 +102,7 @@ modules:
     build-commands:
       - install -Dm644 logo.png /app/share/icons/hicolor/scalable/apps/com.jcleng.Resolve.png
       - install -Dm644 com.jcleng.Resolve.desktop /app/share/applications/com.jcleng.Resolve.desktop
-      - install -Dm644 mime/blackmagicresolve.xml /app/share/mime/packages/blackmagicresolve.xml
+      - install -Dm644 blackmagicresolve.xml /app/share/mime/packages/blackmagicresolve.xml
       - install -Dm755 resolve.py /app/bin/resolve.py
       - |
         cd /run/build/resolve
