@@ -95,6 +95,29 @@ modules:
         url: https://files.pythonhosted.org/packages/92/9d/c4e665119135114480843e7ab388fa94d8480650450e6f8e26b70d323a4c/urllib3-2.8.0-py3-none-any.whl
         sha256: 0cf3cae568d36aa9576b28dfb35f11328f1cb974ca7647d9475ebb86c75ac6e3
 
+  - name: opencl-headers
+    buildsystem: simple
+    build-commands:
+      - mkdir -p ${FLATPAK_DEST}/include/CL
+      - cp -r CL/* ${FLATPAK_DEST}/include/CL/
+    sources:
+      - type: git
+        url: https://github.com/KhronosGroup/OpenCL-Headers.git
+        tag: v2024.10.24
+
+  - name: clinfo
+    buildsystem: simple
+    build-options:
+      env:
+        CFLAGS: "-I/app/include"
+    build-commands:
+      - cc clinfo.c -o clinfo ${CFLAGS} -lOpenCL
+      - install -Dm755 clinfo /app/bin/clinfo
+    sources:
+      - type: git
+        url: https://github.com/Oblomov/clinfo.git
+        tag: 3.0.23.01.25
+
   - name: resolve
     buildsystem: simple
     build-options:
