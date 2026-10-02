@@ -17,7 +17,9 @@ def main():
 
     env = os.environ.copy()
     env["LD_LIBRARY_PATH"] = (
-        os.path.join(PREFIX, "libs")
+        os.path.join(PREFIX, "lib")
+        + ":"
+        + os.path.join(PREFIX, "libs")
         + ":"
         + env.get("LD_LIBRARY_PATH", "")
     )
