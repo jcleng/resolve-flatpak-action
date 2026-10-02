@@ -20,6 +20,11 @@ def main():
         os.path.join(PREFIX, "lib")
         + ":"
         + os.path.join(PREFIX, "libs")
+        # Mesa rusticl OpenCL (libRusticlOpenCL.so / libgallium) 所在目录，
+        # 必须加入 LD_LIBRARY_PATH 否则 OpenCL loader 的 dlopen 找不到它，
+        # 导致 Resolve 报 "不支持的GPU处理模式"。
+        + ":/usr/lib/x86_64-linux-gnu/GL/default/lib"
+        + ":/usr/lib/x86_64-linux-gnu/GL/lib"
         + ":"
         + env.get("LD_LIBRARY_PATH", "")
     )
