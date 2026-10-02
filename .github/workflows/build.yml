@@ -9,6 +9,7 @@ on:
 name: RUN BUILD
 env:
   RELEASE_PATH: ${{ github.workspace }}
+  RESOLVE_VERSION: "19.0.3"
 jobs:
   flatpak:
     name: "Flatpak"
@@ -31,6 +32,8 @@ jobs:
 
     - name: Generate release notes
       run: |
+        DATE=$(date +%Y%m%d)
+        echo "TAG=v${{ env.RESOLVE_VERSION }}-${DATE}" >> "$GITHUB_ENV"
         cat > release.txt <<'EOF'
         # DaVinci Resolve Flatpak (com.jcleng.Resolve)
 
@@ -56,7 +59,8 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        tag_name: flatpakfile
+        tag_name: ${{ env.TAG }}
+        name: DaVinci Resolve ${{ env.RESOLVE_VERSION }} (${{ env.TAG }})
         body_path: ${{ env.RELEASE_PATH }}/release.txt
         files: |
           ${{ env.RELEASE_PATH }}/com.jcleng.Resolve.flatpak
