@@ -111,7 +111,7 @@ modules:
       env:
         CFLAGS: "-I/app/include"
     build-commands:
-      - cc clinfo.c -o clinfo ${CFLAGS} -lOpenCL
+      - cc src/clinfo.c -o clinfo ${CFLAGS} -lOpenCL
       - install -Dm755 clinfo /app/bin/clinfo
     sources:
       - type: git
