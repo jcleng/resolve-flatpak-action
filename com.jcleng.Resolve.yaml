@@ -37,16 +37,6 @@ finish-args:
   - --env=QT_QPA_PLATFORM=xcb
 
 modules:
-  - name: glu
-    buildsystem: simple
-    build-commands:
-      - |
-        dnf install -y mesa-libGLU-devel
-        install -Dm644 /usr/lib64/libGLU.so.1 /app/lib/libGLU.so.1
-    sources:
-      - type: file
-        path: logo.png
-
   - name: libxcrypt
     buildsystem: autotools
     config-opts: ["--enable-obsolete-api=glibc"]
