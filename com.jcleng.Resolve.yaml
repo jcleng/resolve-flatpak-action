@@ -45,8 +45,7 @@ modules:
         install -Dm644 /usr/lib64/libGLU.so.1 /app/lib/libGLU.so.1
     sources:
       - type: file
-        path: dummy
-        dest: dummy
+        path: logo.png
 
   - name: libxcrypt
     buildsystem: autotools
