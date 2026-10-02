@@ -1,0 +1,11 @@
+[Desktop Entry]
+Type=Application
+Name=DaVinci Resolve
+GenericName=Video Editor
+Comment=Professional video editing and color grading
+Exec=/app/bin/resolve.py
+Icon=com.jcleng.Resolve
+Terminal=false
+Categories=Video;AudioVideo;AudioVideoEditing;
+MimeType=application/x-resolveproj;
+StartupNotify=true

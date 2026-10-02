@@ -12,46 +12,25 @@ jobs:
     name: "Flatpak"
     runs-on: ubuntu-latest
     container:
-      image: bilelmoussaoui/flatpak-github-actions:freedesktop-22.08
+      image: bilelmoussaoui/flatpak-github-actions:freedesktop-24.08
       options: --privileged
     steps:
-    - name: Clone Source
-      run: |
-        git clone --depth=1 https://github.com/pobthebuilder/resolve-flatpak.git blackmagic --recursive
+    - name: Checkout
+      uses: actions/checkout@v4
 
-    # - name: Cloudupload
-    #   id: cloudupload
-    #   run: |
-    #     curl -fsSL git.io/file-transfer | sh
-    #     # wet < 2GB
-    #     # gg
-    #     # gof
-    #     ./transfer gg --no-progress blackmagic/com.blackmagic.Resolve.yaml 2>&1 | tee cloudupload.log
-    #     echo "url=$(cat cloudupload.log | grep https | cut -f3 -d' ')" >> $GITHUB_OUTPUT
-    # - name: upload cloudupload url
-    #   run: |
-    #     echo ${{ steps.cloudupload.outputs.url }}
-    #     test_xxx
-
-
-    - name: Download File
-      run: |
-        cd blackmagic
-        sed -i 's/18\.1\.2_Linux.run/18\.1\.1_Linux.run/' com.blackmagic.Resolve.yaml
-        dnf install -y wget
-        wget https://downloads.blackmagicdesign.com/DaVinci_Resolve/18.1.1/DaVinci_Resolve_18.1.1_Linux.zip -O DaVinci_Resolve_18.1.2_Linux.zip
-        ls -lah DaVinci_Resolve_18.1.2_Linux.zip
-    - name: flatpak action
-      uses: flatpak/flatpak-github-actions/flatpak-builder@v4
+    - name: Build Flatpak
+      uses: flatpak/flatpak-github-actions/flatpak-builder@v6
       with:
-        bundle: com.blackmagic.Resolve.flatpak
-        manifest-path: blackmagic/com.blackmagic.Resolve.yaml
-        cache-key: flatpak-builder1811
+        bundle: com.jcleng.Resolve.flatpak
+        manifest-path: com.jcleng.Resolve.yaml
+        cache-key: flatpak-builder-resolve
+        repository-name: flathub
+        branch: stable
 
     - name: Upload Artifact
       uses: actions/upload-artifact@v4
       with:
-        name: com.blackmagic.Resolve.flatpak
-        path: com.blackmagic.Resolve.flatpak
+        name: com.jcleng.Resolve.flatpak
+        path: com.jcleng.Resolve.flatpak
         compression-level: 0
         if-no-files-found: error
