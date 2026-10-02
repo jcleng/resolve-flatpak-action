@@ -7,6 +7,8 @@ on:
         required: true
         default: 'true'
 name: RUN BUILD
+env:
+  RELEASE_PATH: ${{ github.workspace }}
 jobs:
   flatpak:
     name: "Flatpak"
@@ -27,10 +29,35 @@ jobs:
         repository-name: flathub
         branch: stable
 
-    - name: Upload Artifact
-      uses: actions/upload-artifact@v4
+    - name: Generate release notes
+      run: |
+        cat > release.txt <<'EOF'
+        # DaVinci Resolve Flatpak (com.jcleng.Resolve)
+
+        由 GitHub Actions 自动构建的 DaVinci Resolve Flatpak 包。
+
+        ## 安装方法
+
+        ```bash
+        # 下载 com.jcleng.Resolve.flatpak 后：
+        flatpak install --user com.jcleng.Resolve.flatpak
+        flatpak run com.jcleng.Resolve
+        ```
+
+        ## 说明
+
+        - 应用 ID: com.jcleng.Resolve
+        - 基于 DaVinci Resolve 19.0.3 官方安装包构建
+        - 运行时: org.kde.Platform / io.qt.PySide.BaseApp 6.11
+        EOF
+
+    - name: Release
+      uses: softprops/action-gh-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        name: com.jcleng.Resolve.flatpak
-        path: com.jcleng.Resolve.flatpak
-        compression-level: 0
-        if-no-files-found: error
+        tag_name: flatpakfile
+        body_path: ${{ env.RELEASE_PATH }}/release.txt
+        files: |
+          ${{ env.RELEASE_PATH }}/com.jcleng.Resolve.flatpak
+        overwrite: true
