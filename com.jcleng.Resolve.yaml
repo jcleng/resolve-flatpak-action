@@ -124,8 +124,8 @@ modules:
       build-args:
         - --share=network
       env:
-        RESOLVE_VERSION: "19.0.3"
-        RESOLVE_DLID: "ee1da4f13df74d72b6da783ead2ed875"
+        RESOLVE_VERSION: "21.1.1"
+        RESOLVE_DLID: "bc1eb63d0e51443892a43033cb039201"
     build-commands:
       - install -Dm644 logo.png /app/share/icons/hicolor/scalable/apps/com.jcleng.Resolve.png
       - install -Dm644 com.jcleng.Resolve.desktop /app/share/applications/com.jcleng.Resolve.desktop

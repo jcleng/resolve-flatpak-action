@@ -2,8 +2,8 @@
 # 在 build 阶段运行：下载 DaVinci Resolve 安装包，解包内嵌的 squashfs 到 /app
 set -e
 
-PKGVER="${RESOLVE_VERSION:-19.0.3}"
-DLID="${RESOLVE_DLID:-ee1da4f13df74d72b6da783ead2ed875}"
+PKGVER="${RESOLVE_VERSION:-21.1.1}"
+DLID="${RESOLVE_DLID:-bc1eb63d0e51443892a43033cb039201}"
 ARCHIVE="DaVinci_Resolve_${PKGVER}_Linux.zip"
 RUNFILE="DaVinci_Resolve_${PKGVER}_Linux.run"
 

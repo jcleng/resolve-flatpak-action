@@ -9,7 +9,7 @@ on:
 name: RUN BUILD
 env:
   RELEASE_PATH: ${{ github.workspace }}
-  RESOLVE_VERSION: "19.0.3"
+  RESOLVE_VERSION: "21.1.1"
 jobs:
   flatpak:
     name: "Flatpak"
@@ -50,7 +50,7 @@ jobs:
         ## 说明
 
         - 应用 ID: com.jcleng.Resolve
-        - 基于 DaVinci Resolve 19.0.3 官方安装包构建
+        - 基于 DaVinci Resolve 21.1.1 官方安装包构建
         - 运行时: org.kde.Platform / io.qt.PySide.BaseApp 6.11
         EOF
 
