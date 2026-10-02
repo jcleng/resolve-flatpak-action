@@ -108,9 +108,17 @@ echo "==> 提取控制面板 API (dvpanel-framework) ..."
 # 控制面板（DaVinci Panels / Fairlight Panel）需要这两个 .so
 TGZ="/app/share/panels/dvpanel-framework-linux-x86_64.tgz"
 if [ -f "${TGZ}" ]; then
-    tar -xzf "${TGZ}" -C /app/libs libDaVinciPanelAPI.so libFairlightPanelAPI.so 2>/dev/null || \
-    tar -xzf "${TGZ}" -C /app/libs 2>/dev/null
-    echo "    已提取面板 API"
+    # 解包整个 tgz 到临时目录，再复制其中存在的 .so，避免成员名不匹配导致 tar 报错
+    TMPPANEL="$(mktemp -d)"
+    tar -xzf "${TGZ}" -C "${TMPPANEL}" 2>/dev/null || true
+    for so in libDaVinciPanelAPI.so libFairlightPanelAPI.so; do
+        found=$(find "${TMPPANEL}" -name "${so}" 2>/dev/null | head -1)
+        if [ -n "${found}" ]; then
+            cp -a "${found}" /app/libs/
+            echo "    已提取: ${so}"
+        fi
+    done
+    rm -rf "${TMPPANEL}"
 else
     echo "    未找到 dvpanel-framework tgz，跳过"
 fi
