@@ -30,34 +30,68 @@ jobs:
         repository-name: flathub
         branch: stable
 
+    - name: Split if larger than 2GB
+      run: |
+        cd "${{ env.RELEASE_PATH }}"
+        ARCHIVE="com.jcleng.Resolve.flatpak"
+        SIZE=$(stat -c %s "${ARCHIVE}")
+        # 2GB 阈值 (2147483648 bytes)
+        if [ "${SIZE}" -gt 2147483648 ]; then
+          echo "==> 文件大于 2GB ($((SIZE/1024/1024/1024))GB)，拆分为 1.5GB 分片..."
+          split -b 1610612736 -d -a 2 "${ARCHIVE}" "${ARCHIVE}.part"
+          rm -f "${ARCHIVE}"
+          echo "==> 拆分完成:"
+          ls -lh "${ARCHIVE}".part*
+        else
+          echo "==> 文件未超过 2GB，直接上传原文件。"
+        fi
+
     - name: Generate release notes
       run: |
         DATE=$(date +%Y%m%d)
         echo "TAG=v${{ env.RESOLVE_VERSION }}-${DATE}" >> "$GITHUB_ENV"
-        cat > release.txt <<'EOF'
-        # DaVinci Resolve Flatpak (com.jcleng.Resolve)
+        {
+          echo "# DaVinci Resolve Flatpak (com.jcleng.Resolve)"
+          echo ""
+          echo "由 GitHub Actions 自动构建的 DaVinci Resolve Flatpak 包。"
+          echo ""
+          echo "## 安装方法"
+          echo ""
+          if [ -f "${{ env.RELEASE_PATH }}/com.jcleng.Resolve.flatpak" ]; then
+            echo '```bash'
+            echo "# 下载 com.jcleng.Resolve.flatpak 后："
+            echo "flatpak install --user com.jcleng.Resolve.flatpak"
+            echo "flatpak run com.jcleng.Resolve"
+            echo '```'
+          else
+            echo "本包超过 2GB，已拆分为多个 \`com.jcleng.Resolve.flatpak.partXX\` 分片。"
+            echo "下载全部分片到同一目录后，合并并安装："
+            echo '```bash'
+            echo "cat com.jcleng.Resolve.flatpak.part* > com.jcleng.Resolve.flatpak"
+            echo "flatpak install --user com.jcleng.Resolve.flatpak"
+            echo "flatpak run com.jcleng.Resolve"
+            echo '```'
+          fi
+          echo ""
+          echo "## 说明"
+          echo ""
+          echo "- 应用 ID: com.jcleng.Resolve"
+          echo "- 基于 DaVinci Resolve ${{ env.RESOLVE_VERSION }} 官方安装包构建"
+          echo "- 运行时: org.kde.Platform / io.qt.PySide.BaseApp 6.11"
+          echo ""
+          echo "## 文件校验 (SHA256)"
+          echo '```'
+          sha256sum "${{ env.RELEASE_PATH }}"/* | sed 's#${{ env.RELEASE_PATH }}/##'
+          echo '```'
+        } > release.txt
 
-        由 GitHub Actions 自动构建的 DaVinci Resolve Flatpak 包。
-
-        ## 安装方法
-
-        ```bash
-        # 下载 com.jcleng.Resolve.flatpak 后：
-        flatpak install --user com.jcleng.Resolve.flatpak
-        flatpak run com.jcleng.Resolve
-        ```
-
-        ## 说明
-
-        - 应用 ID: com.jcleng.Resolve
-        - 基于 DaVinci Resolve 21.1.1 官方安装包构建
-        - 运行时: org.kde.Platform / io.qt.PySide.BaseApp 6.11
-        EOF
-
-    - name: Upload artifact
-      uses: actions/upload-artifact@v4
+    - name: Release
+      uses: softprops/action-gh-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        name: com.jcleng.Resolve-${{ env.TAG }}
-        path: ${{ env.RELEASE_PATH }}/com.jcleng.Resolve.flatpak
-        compression-level: 0
-        if-no-files-found: error
+        tag_name: ${{ env.TAG }}
+        name: DaVinci Resolve ${{ env.RESOLVE_VERSION }} (${{ env.TAG }})
+        body_path: ${{ env.RELEASE_PATH }}/release.txt
+        files: ${{ env.RELEASE_PATH }}/*
+        overwrite: true
