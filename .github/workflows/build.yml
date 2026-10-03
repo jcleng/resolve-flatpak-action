@@ -8,7 +8,6 @@ on:
         default: 'true'
 name: RUN BUILD
 env:
-  RELEASE_PATH: ${{ github.workspace }}
   RESOLVE_VERSION: "21.1.1"
 jobs:
   flatpak:
@@ -32,7 +31,6 @@ jobs:
 
     - name: Split if larger than 2GB
       run: |
-        cd "${{ env.RELEASE_PATH }}"
         ARCHIVE="com.jcleng.Resolve.flatpak"
         SIZE=$(stat -c %s "${ARCHIVE}")
         # 2GB 阈值 (2147483648 bytes)
@@ -57,7 +55,7 @@ jobs:
           echo ""
           echo "## 安装方法"
           echo ""
-          if [ -f "${{ env.RELEASE_PATH }}/com.jcleng.Resolve.flatpak" ]; then
+          if [ -f "com.jcleng.Resolve.flatpak" ]; then
             echo '```bash'
             echo "# 下载 com.jcleng.Resolve.flatpak 后："
             echo "flatpak install --user com.jcleng.Resolve.flatpak"
@@ -81,7 +79,7 @@ jobs:
           echo ""
           echo "## 文件校验 (SHA256)"
           echo '```'
-          sha256sum "${{ env.RELEASE_PATH }}"/* | sed 's#${{ env.RELEASE_PATH }}/##'
+          sha256sum com.jcleng.Resolve.flatpak* 2>/dev/null
           echo '```'
         } > release.txt
 
@@ -92,6 +90,6 @@ jobs:
       with:
         tag_name: ${{ env.TAG }}
         name: DaVinci Resolve ${{ env.RESOLVE_VERSION }} (${{ env.TAG }})
-        body_path: ${{ env.RELEASE_PATH }}/release.txt
-        files: ${{ env.RELEASE_PATH }}/*
+        body_path: ${{ github.workspace }}/release.txt
+        files: ${{ github.workspace }}/com.jcleng.Resolve.flatpak*
         overwrite: true
