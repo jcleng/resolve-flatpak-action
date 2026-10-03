@@ -1,5 +1,42 @@
 # resolve-flatpak-action
 
+> ## ⚠️ 当前状态：无法启动（构建成功，运行失败）
+>
+> 包可以正常**构建**并发布，但安装后**启动即失败**，报错：
+>
+> ```
+> Failed to create application support directories
+> ```
+>
+> ### 根因（已通过 strace 确认）
+>
+> DaVinci Resolve 是闭源软件，启动时会**硬编码**在它的安装目录 `/app` 下创建并写入一系列运行时数据目录，例如：
+>
+> - `/app/Apple Immersive`
+> - `/app/Resolve`
+> - `/app/BlackmagicRaw`
+> - `/app/easyDCP` / `/app/Fairlight` / `/app/DaVinci Resolve`
+> - `/app/logs` / `/app/config` / `/app/.license`
+> - 以及 `LUT`、`Fusion`、`database`、`cache` 等
+>
+> 而 **Flatpak 运行时的 `/app` 是只读文件系统（EROFS）**。strace 抓到的真实失败调用是：
+>
+> ```
+> mkdir("/app/Apple Immersive", 0777) = -1 EROFS (Read-only file system)
+> ```
+>
+> 它不仅要在 `/app` 下创建这些目录，运行时还要**持续往里面写缓存、数据库、日志、临时文件等数据**。因此仅仅在构建期"预创建空目录"是**不够的**——目录存在了，后续写文件照样 `EROFS` 失败。
+>
+> ### 本质冲突
+>
+> Flatpak 的 `/app` 设计为只读（来自镜像层），但 Resolve 这个闭源程序把运行时可变数据硬编码写在安装目录里，二者根本冲突。
+>
+> ### 尚未应用的修复方向
+>
+> 需要让 `/app` 下 Resolve 需要写入的那部分路径在运行时**可写**，标准做法是使用 Flatpak 的 `persist` 机制（例如 `--persist=/app` 或仅 persist 必要的子目录），将写操作重定向到用户可写区（`~/.var/app/com.jcleng.Resolve/`）。此修复**尚未合入**当前构建，故当前产物不可用。
+>
+> （已尝试过但无效的方案：`RESOLVE_INSTALL_LOCATION` / `DAVINCI_RESOLVE_CONFIG_DIR` 等环境变量重定向、`/app` 下预创建空目录——均因 `/app` 只读而失败。）
+
 由本项目**自包含**构建 DaVinci Resolve 的 Flatpak 安装包，并通过 GitHub Actions 自动打包、发布到 **Releases**（不使用 GitHub Releases 之外的其他存储方式）。
 
 > 本项目不依赖任何第三方 flatpak 仓库（如 `pobthebuilder/resolve-flatpak`），所有构建逻辑都在本仓库内完成。
