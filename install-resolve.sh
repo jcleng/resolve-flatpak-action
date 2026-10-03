@@ -131,13 +131,10 @@ if [ -f /app/libs/libBlackmagicRawAPI.so ]; then
     echo "    已链接 libBlackmagicRawAPI.so"
 fi
 
-echo "==> 修复可写目录权限 ..."
-# 运行时这些目录需要可写（缓存、许可证、数据库等）
-for d in easyDCP .license Fairlight Videos/CacheClip Videos/.gallery Documents/BlackmagicDesign; do
-    [ -d "/app/${d}" ] && chmod -R a+rwX "/app/${d}" 2>/dev/null || true
-done
-# 确保 bin/resolve 可执行
+echo "==> 确保 bin/resolve 可执行 ..."
 [ -f /app/bin/resolve ] && chmod +x /app/bin/resolve
+# 注意：/app 在 Flatpak 运行时是只读的，运行时可写目录（配置/日志/缓存）
+# 由 resolve.py 在用户家目录创建，此处无需也不能对 /app 做 chmod。
 
 echo "==> 安装完成"
 ls -la /app/bin/

@@ -9,11 +9,30 @@ import sys
 PREFIX = "/app"
 
 
+def _mkdir(path):
+    """Create a directory (and parents) if it does not exist yet."""
+    try:
+        os.makedirs(path, exist_ok=True)
+    except OSError:
+        pass
+
+
 def main():
     resolve_bin = os.path.join(PREFIX, "bin", "resolve")
     if not os.path.exists(resolve_bin):
         sys.stderr.write("DaVinci Resolve binary not found at %s\n" % resolve_bin)
         return 1
+
+    home = os.path.expanduser("~")
+    # Resolve needs several *writable* directories at runtime. /app is read-only
+    # in a Flatpak, so these must live in the user's writable data/config home.
+    config_dir = os.path.join(home, ".config", "DaVinciResolve")
+    log_dir = os.path.join(home, ".local", "share", "DaVinciResolve", "logs")
+    support_dir = os.path.join(home, ".local", "share", "DaVinciResolve")
+    documents_dir = os.path.join(home, "Documents", "BlackmagicDesign", "DaVinci Resolve")
+
+    for d in (config_dir, log_dir, support_dir, documents_dir):
+        _mkdir(d)
 
     env = os.environ.copy()
     env["LD_LIBRARY_PATH"] = (
@@ -29,8 +48,9 @@ def main():
         + env.get("LD_LIBRARY_PATH", "")
     )
     env["RESOLVE_INSTALL_LOCATION"] = PREFIX
-    env["DAVINCI_RESOLVE_CONFIG_DIR"] = os.path.join(PREFIX, "config")
-    env["DAVINCI_RESOLVE_LOG_DIR"] = os.path.join(PREFIX, "logs")
+    # 必须指向可写目录（/app 是只读的，Resolve 启动会因无法创建配置/日志目录而失败）
+    env["DAVINCI_RESOLVE_CONFIG_DIR"] = config_dir
+    env["DAVINCI_RESOLVE_LOG_DIR"] = log_dir
     # Force X11 (Resolve does not support Wayland yet)
     if "QT_QPA_PLATFORM" not in env:
         env["QT_QPA_PLATFORM"] = "xcb"
