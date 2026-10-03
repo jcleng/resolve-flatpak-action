@@ -11,10 +11,10 @@
 | 项 | 值 |
 |---|---|
 | 应用 ID | `com.jcleng.Resolve` |
-| 构建版本 | DaVinci Resolve **19.0.3**（Linux） |
+| 构建版本 | DaVinci Resolve **21.1.1**（Linux） |
 | 运行时 | `org.kde.Platform` / `io.qt.PySide.BaseApp` 6.11 |
-| 产物 | `com.jcleng.Resolve.flatpak`（约 1 GB） |
-| 发布方式 | GitHub Release（tag: `flatpakfile`） |
+| 产物 | `com.jcleng.Resolve.flatpak`（约 4 GB，超 2GB 自动分片为 1.5GB part） |
+| 发布方式 | GitHub Release（tag: `v21.1.1-<日期>`） |
 
 ---
 
@@ -51,9 +51,9 @@ resolve-flatpak-action/
 1. 打开仓库 **Actions → RUN BUILD**
 2. 点击 **Run workflow**
 
-构建约需 50–60 分钟（下载 2.9 GB + 解包 + 复制 + `flatpak build-bundle`）。
+构建约需 50–60 分钟（下载 3.9 GB + 解包 + 复制 + `flatpak build-bundle`）。
 
-完成后在仓库 **Releases → `flatpakfile`** 下载 `com.jcleng.Resolve.flatpak`。
+完成后在仓库 **Releases → `v21.1.1-<日期>`** 下载 `com.jcleng.Resolve.flatpak`（若超过 2GB 会拆分为 `com.jcleng.Resolve.flatpak.partXX` 分片，下载到同一目录后 `cat` 合并即可安装）。
 
 ---
 
@@ -67,7 +67,7 @@ flatpak install --user com.jcleng.Resolve.flatpak
 flatpak run com.jcleng.Resolve
 ```
 
-首次运行需要主机已配置好 GPU 驱动（开源 Mesa 或 NVIDIA 闭源驱动），并通过 `--device=dri` 访问 GPU。
+首次运行需要主机已配置好 GPU 驱动（Intel 核显使用 Mesa rusticl OpenCL，见下方说明），并通过 `--device=all` 访问 GPU。
 
 ---
 
@@ -79,6 +79,9 @@ manifest 中额外打包了以下运行库，以补齐 Resolve 运行所需：
 - **glu**（`libGLU.so.1`，Resolve 启动依赖）
 - **squashfs-tools**（`unsquashfs`，构建期解包使用）
 - **python3-requests**（构建期下载 API 调用使用）
+- **opencl-headers** + **clinfo**（诊断工具，沙箱内可运行 `clinfo` 验证 OpenCL）
+
+> **Intel 核显 OpenCL（rusticl）支持**：Resolve 的 GPU 处理模式依赖 OpenCL。本包在 `resolve.py` 中将 Mesa rusticl 的库目录（`/usr/lib/x86_64-linux-gnu/GL/default/lib`）加入 `LD_LIBRARY_PATH`，并在 `finish-args` 暴露 `--device=all`，使 Intel 核显的 rusticl OpenCL 平台可被正常加载。
 
 ---
 
@@ -89,8 +92,8 @@ manifest 中额外打包了以下运行库，以补齐 Resolve 运行所需：
 ```yaml
 build-options:
   env:
-    RESOLVE_VERSION: "19.0.3"                              # 目标版本
-    RESOLVE_DLID: "ee1da4f13df74d72b6da783ead2ed875"      # 对应 Blackmagic 下载 ID
+    RESOLVE_VERSION: "21.1.1"                              # 目标版本
+    RESOLVE_DLID: "bc1eb63d0e51443892a43033cb039201"      # 对应 Blackmagic 下载 ID
 ```
 
 下载 ID 可通过 Blackmagic 官网支持页对应版本的注册接口获得。
