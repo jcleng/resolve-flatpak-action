@@ -136,5 +136,34 @@ echo "==> 确保 bin/resolve 可执行 ..."
 # 注意：/app 在 Flatpak 运行时是只读的，运行时可写目录（配置/日志/缓存）
 # 由 resolve.py 在用户家目录创建，此处无需也不能对 /app 做 chmod。
 
+echo "==> 预创建 /app 下 Resolve 运行时所需的目录（镜像内，避免运行时 mkdir 触发 EROFS）..."
+# strace 发现 Resolve 启动时会尝试在 /app 下 mkdir（如 "/app/Apple Immersive"），
+# 而 /app 运行时只读，导致 "Failed to create application support directories"。
+# 在构建期预创建这些目录，它们会被写进镜像，运行时已存在即可跳过 mkdir。
+for d in \
+    "Apple Immersive" \
+    "Resolve" \
+    "BlackmagicRaw" \
+    "easyDCP" \
+    "Fairlight" \
+    "DaVinci Resolve" \
+    "logs" \
+    "config" \
+    ".license" \
+    "share/resolve" \
+    "share/BlackmagicRaw" \
+    "LUT" \
+    "templates" \
+    "PowerGrades" \
+    "White Balance" \
+    "Rendavers" \
+    "Fusion" \
+    "database" \
+    "cache" ; do
+    mkdir -p "/app/${d}"
+    chmod 1777 "/app/${d}" 2>/dev/null || true
+done
+echo "    已预创建 $(find /app -maxdepth 2 -type d | wc -l) 个目录"
+
 echo "==> 安装完成"
 ls -la /app/bin/
